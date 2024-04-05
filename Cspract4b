@@ -1,0 +1,66 @@
+en
+conf t
+enable secret enpa55
+
+int gig0/0
+ipv6 address 2001:DB8:1:10::1/64
+ipv6 address FE80::1 link-local
+no shut
+int se0/1/0
+ipv6 address 2001:DB8:1:1::1/64
+ipv6 address FE80::1 link-local
+no shut 
+int gig0/1
+ipv6 address 2001:DB8:1:11::1/64
+ipv6 address FE80::1 link-local
+no shut 
+
+
+
+int se0/1/0
+ipv6 address 2001:DB8:1:1::2/64
+ipv6 address FE80::2 link-local
+no shut 
+int se0/1/1
+ipv6 address 2001:DB8:1:2::2/64
+ipv6 address FE80::2 link-local
+no shut 
+
+
+int gig0/0
+ipv6 address 2001:DB8:1:30::1/64
+ipv6 address FE80::3 link-local
+no shut 
+int se0/1/0
+ipv6 address 2001:DB8:1:2::1/64
+ipv6 address FE80::3 link-local
+no shut 
+
+ipv6 unicast-routing
+ipv6 route 2001:DB8:1:2::0/64 2001:DB8:1:1::2
+ipv6 route 2001:DB8:1:30::0/64 2001:DB8:1:1::2
+
+ipv6 unicast-routing
+ipv6 route 2001:DB8:1:10::0/64 2001:DB8:1:1::1
+ipv6 route 2001:DB8:1:11::0/64 2001:DB8:1:1::1
+ipv6 route 2001:DB8:1:30::0/64 2001:DB8:1:2::1
+
+ipv6 unicast-routing
+ipv6 route 2001:DB8:1:10::0/64 2001:DB8:1:2::2
+ipv6 route 2001:DB8:1:11::0/64 2001:DB8:1:2::2
+ipv6 route 2001:DB8:1:1::0/64 2001:DB8:1:2::2
+
+ipv6 access-list BLOCK_HTTP
+deny tcp any host 2001:DB8:1:30::30 eq www
+deny tcp any host 2001:DB8:1:30::30 eq 443
+permit ipv6 any any
+exit
+int gig0/1
+ipv6 traffic-filter BLOCK_HTTP in
+
+ipv6 access-list BLOCK_ICMP
+deny icmp any any
+permit ipv6 any any
+exit
+int gig0/0
+ipv6 traffic-filter BLOCK_ICMP out
